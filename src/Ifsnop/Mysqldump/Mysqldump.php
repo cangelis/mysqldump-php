@@ -1247,28 +1247,6 @@ class Mysqldump
     }
 }
 
-/**
- * Enum with all available compression methods
- *
- */
-abstract class CompressMethod
-{
-    public static $enums = array(
-        Mysqldump::NONE,
-        Mysqldump::GZIP,
-        Mysqldump::BZIP2,
-    );
-
-    /**
-     * @param string $c
-     * @return boolean
-     */
-    public static function isValid($c)
-    {
-        return in_array($c, self::$enums);
-    }
-}
-
 abstract class CompressManagerFactory
 {
     /**
@@ -1277,14 +1255,15 @@ abstract class CompressManagerFactory
      */
     public static function create($c)
     {
-        $c = ucfirst(strtolower($c));
-        if (!CompressMethod::isValid($c)) {
+        if (!class_exists($c)) {
+            $c = __NAMESPACE__."\\"."Compress".ucfirst(strtolower($c));
+        }
+
+        if (!class_exists($c)) {
             throw new Exception("Compression method ($c) is not defined yet");
         }
 
-        $method = __NAMESPACE__."\\"."Compress".$c;
-
-        return new $method;
+        return new $c;
     }
 }
 
